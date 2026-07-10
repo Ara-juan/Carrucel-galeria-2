@@ -1,0 +1,287 @@
+:root{
+    --bg: #12121c;
+    --panel: #191926;
+    --ring: #0d0d15;
+    --accent: #7cffb2;
+    --text: #f2f2f5;
+    --muted: #8a8a9a;
+    
+    /* VALORES MODIFICADOS (MÁS GRANDES) */
+    --radius: clamp(120px, 23vmin, 280px);
+    --item-w: clamp(38px, 7.5vmin, 90px);
+    --item-h: clamp(66px, 12.8vmin, 150px);
+    --total: 21;
+  }
+ 
+  *{ box-sizing: border-box; }
+ 
+  html, body{
+    height: 100%;
+    margin: 0;
+  }
+ 
+  body{
+    background: radial-gradient(ellipse at 50% 20%, #1b1b2c 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    padding: 12px;
+  }
+ 
+  .heading{
+    text-align: center;
+    z-index: 5;
+    pointer-events: none;
+    margin-bottom: clamp(8px, 2vmin, 24px);
+    flex: 0 0 auto;
+  }
+ 
+  .heading h1{
+    margin: 0;
+    font-size: clamp(18px, 3vmin, 26px);
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+ 
+  .heading p{
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: clamp(11px, 1.6vmin, 14px);
+  }
+ 
+  .wrapper{
+    position: relative;
+    width: calc(var(--radius) * 2 + var(--item-h));
+    height: calc(var(--radius) * 2 + var(--item-h));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1400px;
+    flex: 0 0 auto;
+  }
+ 
+  .ring{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    animation: spin 40s linear infinite;
+  }
+ 
+  .wrapper:hover .ring{
+    animation-play-state: paused;
+  }
+ 
+  @keyframes spin{
+    from{ transform: rotateZ(0deg); }
+    to{ transform: rotateZ(360deg); }
+  }
+ 
+  .item{
+    --i: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--item-w);
+    height: var(--item-h);
+    margin-top: calc(var(--item-h) / -2);
+    margin-left: calc(var(--item-w) / -2);
+    transform:
+      rotate(calc(360deg / var(--total) * var(--i)))
+      translateY(calc(var(--radius) * -1));
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    border: 2px solid rgba(255,255,255,0.06);
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    background: #222;
+  }
+ 
+  .item img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.9) brightness(0.85);
+    transition: filter 0.35s ease;
+  }
+ 
+  .item:hover{
+    transform:
+      rotate(calc(360deg / var(--total) * var(--i)))
+      translateY(calc(var(--radius) * -1 - 10px))
+      scale(1.12);
+    box-shadow: 0 10px 30px rgba(124,255,178,0.35);
+    border-color: var(--accent);
+    z-index: 3;
+  }
+ 
+  .item:hover img{
+    filter: saturate(1.1) brightness(1);
+  }
+ 
+  .center{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--radius) * 2 - var(--item-h) - 20px);
+    height: calc(var(--radius) * 2 - var(--item-h) - 20px);
+    border-radius: 50%;
+    background: var(--ring);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.05), inset 0 0 40px rgba(0,0,0,0.6);
+    z-index: 1;
+  }
+ 
+  .center-img{
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.5s ease, transform 6s ease;
+    transform: scale(1.05);
+  }
+ 
+  .center-img.active{
+    opacity: 1;
+    transform: scale(1.15);
+  }
+ 
+  .center-overlay{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0.35) 100%);
+  }
+ 
+  .center-label{
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 20px;
+  }
+ 
+  .center-label .title{
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+ 
+  .center-label .title.show{
+    opacity: 1;
+    transform: translateY(0);
+  }
+ 
+  .center-label .sub{
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+ 
+  .center-label .sub.show{
+    opacity: 0.85;
+  }
+ 
+  .placeholder{
+    position: relative;
+    z-index: 2;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  .modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 18, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  padding: 20px;
+}
+
+.modal.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(0.9);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal.open .modal-content {
+  transform: scale(1);
+}
+
+.modal-content img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.modal-content h2 {
+  margin-top: 16px;
+  color: var(--text);
+  font-size: clamp(18px, 2.5vmin, 24px);
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 38px;
+  cursor: pointer;
+  transition: color 0.25s, transform 0.25s;
+}
+
+.modal-close:hover {
+  color: var(--accent);
+  transform: scale(1.1);
+}
+
+/* Optimización para celulares en horizontal */
+@media (max-height: 500px) {
+  .modal-content { flex-direction: row; gap: 20px; }
+  .modal-content img { max-height: 80vh; }
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HANNITA</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+ 
+  <div class="heading">
+    <h1>HANNITA</h1>
+    <p>Pasa el cursor sobre las tarjetas para explorar</p>
+  </div>
+ 
+  <div class="wrapper">
+    <div class="ring" id="ring"></div>
+    <div class="center" id="center">
+      <div class="center-img" id="centerImg"></div>
+      <div class="center-overlay"></div>
+      <div class="center-label" id="centerLabel">
+        <span class="title" id="centerTitle"></span>
+        <span class="sub" id="centerSub"></span>
+      </div>
+      <div class="placeholder" id="placeholder">Mi hannita linda<br></div>
+    </div>
+  </div>
+ 
+ <div id="modal" class="modal">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <div class="modal-content">
+      <img id="modalImg" src="" alt="Imagen Completa">
+      <h2 id="modalTitle">Título</h2>
+    </div>
+  </div>
+  <audio id="bgMusic" src="DUKI - eCLIPSE sOLAR (Letra).mp3" loop></audio>
+  <script src="script.js"></script>
+</body>
+</html>
