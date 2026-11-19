@@ -34,31 +34,223 @@ const placeholder = document.getElementById('placeholder');
 const modal = document.getElementById('modal');
 const modalImg = document.getElementById('modalImg');
 const modalTitle = document.getElementById('modalTitle');
+const modalCounter = document.getElementById('modalCounter');
 const modalClose = document.getElementById('modalClose');
+const modalPrev = document.getElementById('modalPrev');
+const modalNext = document.getElementById('modalNext');
 
-// NUEVO: Selector de la música de fondo
+// Efectos y audio
+const heartsContainer = document.getElementById('heartsContainer');
 const bgMusic = document.getElementById('bgMusic');
+const musicToggle = document.getElementById('musicToggle');
+const musicLabel = document.getElementById('musicLabel');
 
-let activeItem = null;
-
+let currentIndex = -1;
 document.documentElement.style.setProperty('--total', total);
 
-// NUEVO: Función para iniciar la música de forma segura ante restricciones del navegador
-function initMusic() {
-  if (bgMusic && bgMusic.paused) {
-    bgMusic.volume = 0.4; // Ajusta el volumen aquí (0.0 es silencio, 1.0 es el máximo)
-    bgMusic.play().catch(error => {
-      console.log("El navegador bloqueó la reproducción automática inicial hasta otra acción.");
-    });
+/* =========================================
+   1. CIELO ESTRELLADO + ESTRELLAS FUGACES
+   ========================================= */
+function initStarfield() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  const starColors = ['#ffffff', '#d8fff0', '#ffd6e5', '#cfe4ff'];
+  const stars = Array.from({ length: 140 }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    radius: Math.random() * 1.6 + 0.4,
+    alpha: Math.random(),
+    speed: (Math.random() * 0.015 + 0.005) * (Math.random() < 0.5 ? 1 : -1),
+    color: starColors[Math.floor(Math.random() * starColors.length)]
+  }));
+
+  let shootingStar = null;
+
+  function spawnShootingStar() {
+    shootingStar = {
+      x: Math.random() * width * 0.8,
+      y: Math.random() * height * 0.35,
+      len: Math.random() * 90 + 60,
+      speed: Math.random() * 9 + 8,
+      alpha: 1
+    };
+  }
+
+  setInterval(() => {
+    if (!shootingStar && Math.random() > 0.35) {
+      spawnShootingStar();
+    }
+  }, 5500);
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    for (const s of stars) {
+      s.alpha += s.speed;
+      if (s.alpha >= 1 || s.alpha <= 0.15) s.speed *= -1;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0.1, Math.min(1, s.alpha));
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    if (shootingStar) {
+      ctx.save();
+      const grad = ctx.createLinearGradient(
+        shootingStar.x,
+        shootingStar.y,
+        shootingStar.x - shootingStar.len,
+        shootingStar.y - shootingStar.len * 0.5
+      );
+      grad.addColorStop(0, `rgba(255, 255, 255, ${shootingStar.alpha})`);
+      grad.addColorStop(1, 'rgba(124, 255, 178, 0)');
+
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(shootingStar.x, shootingStar.y);
+      ctx.lineTo(shootingStar.x - shootingStar.len, shootingStar.y - shootingStar.len * 0.5);
+      ctx.stroke();
+      ctx.restore();
+
+      shootingStar.x += shootingStar.speed;
+      shootingStar.y += shootingStar.speed * 0.5;
+      shootingStar.alpha -= 0.018;
+
+      if (shootingStar.alpha <= 0) shootingStar = null;
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  animate();
+}
+
+initStarfield();
+
+/* =========================================
+   2. LLUVIA DE CORAZONES AL ABRIR IMAGEN
+   ========================================= */
+function triggerHeartRain(amount = 30) {
+  const symbols = ['❤', '💕', '💖', '✨', '💗'];
+  const colors = ['#ff7aa2', '#ff4d88', '#ffb3c6', '#7cffb2', '#ffffff'];
+
+  for (let i = 0; i < amount; i++) {
+    const heart = document.createElement('span');
+    heart.className = 'falling-heart';
+    heart.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+    const left = Math.random() * 100;
+    const size = Math.random() * 16 + 14;
+    const duration = Math.random() * 2.2 + 2.4;
+    const delay = Math.random() * 0.9;
+    const drift = (Math.random() - 0.5) * 140;
+    const rotation = (Math.random() - 0.5) * 360;
+    const scale = Math.random() * 0.6 + 0.75;
+
+    heart.style.left = `${left}vw`;
+    heart.style.fontSize = `${size}px`;
+    heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+    heart.style.setProperty('--dur', `${duration}s`);
+    heart.style.setProperty('--drift', `${drift}px`);
+    heart.style.setProperty('--rot', `${rotation}deg`);
+    heart.style.setProperty('--scale', scale);
+    heart.style.animationDelay = `${delay}s`;
+
+    heart.addEventListener('animationend', () => heart.remove());
+    heartsContainer.appendChild(heart);
   }
 }
 
-// Función para abrir modal emergente
-function openModal(itemData) {
-  if (!itemData) return;
+/* =========================================
+   3. DESTELLOS SUTILES AL MOVER EL CURSOR
+   ========================================= */
+let lastSparkle = 0;
+document.addEventListener('mousemove', (e) => {
+  const now = Date.now();
+  if (now - lastSparkle < 55) return;
+  lastSparkle = now;
+
+  const sparkle = document.createElement('span');
+  sparkle.className = 'cursor-sparkle';
+  sparkle.style.left = `${e.clientX}px`;
+  sparkle.style.top = `${e.clientY}px`;
+  sparkle.addEventListener('animationend', () => sparkle.remove());
+  document.body.appendChild(sparkle);
+});
+
+/* =========================================
+   4. MÚSICA DE FONDO Y CONTROL FLOTANTE
+   ========================================= */
+function updateMusicUI(isPlaying) {
+  if (isPlaying) {
+    musicToggle.classList.add('playing');
+    musicLabel.textContent = 'Puro Parcerito';
+  } else {
+    musicToggle.classList.remove('playing');
+    musicLabel.textContent = 'Música pausada';
+  }
+}
+
+function initMusic() {
+  if (bgMusic && bgMusic.paused) {
+    bgMusic.volume = 0.4;
+    bgMusic.play()
+      .then(() => updateMusicUI(true))
+      .catch(() => {});
+  }
+}
+
+musicToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (bgMusic.paused) {
+    bgMusic.volume = 0.4;
+    bgMusic.play().then(() => updateMusicUI(true)).catch(() => {});
+  } else {
+    bgMusic.pause();
+    updateMusicUI(false);
+  }
+});
+
+/* =========================================
+   5. CARRUSEL Y MODAL CON NAVEGACIÓN
+   ========================================= */
+function previewItem(index) {
+  const data = items[index];
+  if (!data) return;
+  currentIndex = index;
+  centerImg.style.backgroundImage = `url(${data.url})`;
+  centerImg.classList.add('active');
+  centerTitle.textContent = data.title;
+  centerTitle.classList.add('show');
+  centerSub.classList.add('show');
+  placeholder.style.opacity = 0;
+}
+
+function openModal(index, heartCount = 32) {
+  if (index < 0 || index >= total) index = 0;
+  currentIndex = index;
+  const itemData = items[currentIndex];
+
+  previewItem(currentIndex);
   modalImg.src = itemData.url;
   modalTitle.textContent = itemData.title;
+  modalCounter.textContent = `${currentIndex + 1} / ${total}`;
   modal.classList.add('open');
+
+  triggerHeartRain(heartCount);
 }
 
 items.forEach((data, i) => {
@@ -67,50 +259,56 @@ items.forEach((data, i) => {
   el.style.setProperty('--i', i);
 
   const img = document.createElement('img');
-  img.src = data.url; 
+  img.src = data.url;
   img.alt = data.title;
   img.loading = 'lazy';
   el.appendChild(img);
 
-  // Evento Hover
-  el.addEventListener('mouseenter', () => {
-    centerImg.style.backgroundImage = `url(${data.url})`;
-    centerImg.classList.add('active');
-    centerTitle.textContent = data.title;
-    centerTitle.classList.add('show');
-    centerSub.classList.add('show');
-    placeholder.style.opacity = 0;
-    activeItem = data; 
-  });
+  el.addEventListener('mouseenter', () => previewItem(i));
 
-  // Evento Click en la tarjeta del carrusel
   el.addEventListener('click', () => {
-    initMusic(); // Se activa el reproductor de música en el primer clic
-    openModal(data);
+    initMusic();
+    openModal(i, 32);
   });
 
   ring.appendChild(el);
 });
 
-// Evento Click en el círculo central
 center.addEventListener('click', () => {
-  initMusic(); // Se activa también si hacen clic al centro
-  openModal(activeItem);
+  initMusic();
+  openModal(currentIndex === -1 ? 0 : currentIndex, 32);
 });
 
-// Evento para cerrar el modal al pulsar la 'X'
+modalPrev.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const prevIdx = (currentIndex - 1 + total) % total;
+  openModal(prevIdx, 14);
+});
+
+modalNext.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const nextIdx = (currentIndex + 1) % total;
+  openModal(nextIdx, 14);
+});
+
 modalClose.addEventListener('click', () => {
   modal.classList.remove('open');
 });
 
-// Evento para cerrar el modal al hacer click en el fondo oscuro
 modal.addEventListener('click', (e) => {
   if (e.target === modal) {
     modal.classList.remove('open');
   }
 });
 
-// NUEVO: Respaldo para iniciar la música si el usuario da clic en cualquier otra parte libre del fondo
+// Atajos de teclado cuando el modal está abierto
+document.addEventListener('keydown', (e) => {
+  if (!modal.classList.contains('open')) return;
+  if (e.key === 'Escape') modal.classList.remove('open');
+  if (e.key === 'ArrowRight') openModal((currentIndex + 1) % total, 14);
+  if (e.key === 'ArrowLeft') openModal((currentIndex - 1 + total) % total, 14);
+});
+
 document.body.addEventListener('click', () => {
   initMusic();
-}, { once: true }); // '{ once: true }' asegura que este disparador genérico funcione solo en el primer toque.
+}, { once: true });

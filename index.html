@@ -1,38 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paulita</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paulita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
- 
+
+  <!-- Fondo de estrellas y capa de corazones -->
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div id="heartsContainer" class="hearts-container" aria-hidden="true"></div>
+
   <div class="heading">
     <h1>Paulita</h1>
-    <p>Pasa el cursor sobre las tarjetas para explorar</p>
+    <p>Pasa el cursor sobre las tarjetas y haz clic para abrir</p>
   </div>
- 
+
   <div class="wrapper">
+    <div class="ambient-glow" aria-hidden="true"></div>
     <div class="ring" id="ring"></div>
-    <div class="center" id="center">
+    <div class="center" id="center" title="Haz clic para ampliar">
       <div class="center-img" id="centerImg"></div>
       <div class="center-overlay"></div>
       <div class="center-label" id="centerLabel">
         <span class="title" id="centerTitle"></span>
-        <span class="sub" id="centerSub"></span>
+        <span class="sub" id="centerSub">Toca para ver completa ✨</span>
       </div>
-      <div class="placeholder" id="placeholder">Mi Paulita linda<br></div>
+      <div class="placeholder" id="placeholder">
+        <span class="placeholder-heart">✦</span>
+        <span>Mi Paulita linda</span>
+      </div>
     </div>
   </div>
- 
- <div id="modal" class="modal">
-    <button class="modal-close" id="modalClose">&times;</button>
+
+  <!-- Modal con navegación -->
+  <div id="modal" class="modal">
+    <button class="modal-close" id="modalClose" aria-label="Cerrar">&times;</button>
+    <button class="modal-nav prev" id="modalPrev" aria-label="Anterior">&#10094;</button>
+
     <div class="modal-content">
-      <img id="modalImg" src="" alt="Imagen Completa">
+      <div class="modal-frame">
+        <img id="modalImg" src="" alt="Imagen Completa">
+      </div>
+      <span class="modal-counter" id="modalCounter">1 / 21</span>
       <h2 id="modalTitle">Título</h2>
     </div>
+
+    <button class="modal-nav next" id="modalNext" aria-label="Siguiente">&#10095;</button>
   </div>
+
+  <!-- Control flotante de música -->
+  <button id="musicToggle" class="music-toggle" aria-label="Controlar música">
+    <span class="eq-bars" id="eqBars">
+      <i></i><i></i><i></i>
+    </span>
+    <span class="music-label" id="musicLabel">Activar música</span>
+  </button>
+
   <audio id="bgMusic" src="Oblivion's Mighty Trash - Puro Parcerito  letra.mp3" loop></audio>
   <script src="script.js"></script>
 </body>
